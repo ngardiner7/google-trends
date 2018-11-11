@@ -6,25 +6,23 @@ from datetime import timedelta
 
 # Connects to Google
 
-def get_weekly_search_interest_df():
+def get_daily_search_interest():
 
     with open('keywords.yaml', 'r') as f:
         keyword_dict = yaml.load(f)
 
     # Create empty dataframe to append results to
-    df = pd.DataFrame(columns=['searchInterest','isPartial','keyword'])
+    df = pd.DataFrame(columns=['date','searchInterest','isPartial','keyword'])
 
     # Change the dict below to get output for different teams
     for keyword in keyword_dict["event_type"]["nba"]["short_name"]:
-    # for keyword in keyword_dict["event_type"]["nba"]["short_name"]:
 
         df = df.append(make_trends_call(keyword))
 
     # Remove index, rename "index" column to "week", drop all partial incomplete weeks
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': "week"}, inplace=True)
-    df = df.query('isPartial == "False"')
-
+    # df.reset_index(inplace=True)
+    # df.rename(columns={'index': "week"}, inplace=True)
+    df.drop(columns=['isPartial'], inplace=True)
     return df
 
 
@@ -43,21 +41,11 @@ def make_trends_call(keyword):
     kw_df = np.repeat(keyword, interest_over_time_df.shape[0])
     interest_over_time_df['keyword'] = kw_df
 
+    # should be able to clena up the crap below a bit
     interest_over_time_df.rename(index=str, columns={keyword: "searchInterest"}, inplace=True)
+    interest_over_time_df.reset_index(inplace=True)
 
-    return interest_over_time_df
-
-
-def convert_weekly_df_to_daily_df(weekly_df):
-    # Convert week to datetime object
-    weekly_df['week'] = pd.to_datetime(weekly_df['week'])
-    daily_df = pd.DataFrame(columns=['date', 'searchInterest','keyword'])
-    days_in_week = 7
-
-    # Iterate through every row in the trends dataframe and turn weekly data into daily data
-    # Assumes same exact search interest for every day in a given week
-    for index, row in weekly_df.iterrows():
-        for x in range(days_in_week):
-            daily_df.loc[index * days_in_week + x] = [row['week'] + timedelta(days=x), row['searchInterest'], row['keyword']]
+    interest_over_time_df['date'] = pd.to_datetime(interest_over_time_df['date'], format='%Y-%m-%d')
+    daily_df = interest_over_time_df.set_index('date').resample('D').ffill().reset_index()
 
     return daily_df

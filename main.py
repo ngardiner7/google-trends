@@ -5,9 +5,8 @@ import gtrends
 from datetime import timedelta
 
 def main():
-    weekly_df = gtrends.get_weekly_search_interest_df()
+    daily_df = gtrends.get_daily_search_interest()
     #This is VERY slow. Need to figure out how to speed up. Ideally pandas or numpy has some more built in functions I can take advantage of
-    daily_df = gtrends.convert_weekly_df_to_daily_df(weekly_df)
 
     # Save output to CSV
     daily_df.to_csv('google_trends-weekly.csv', index=True)
