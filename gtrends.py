@@ -15,7 +15,7 @@ def get_daily_search_interest():
     df = pd.DataFrame(columns=['date','searchInterest','isPartial','keyword'])
 
     # Change the dict below to get output for different teams
-    for keyword in keyword_dict["event_type"]["nba"]["short_name"]:
+    for keyword in keyword_dict["event_type"]["nhl"]["short_name"]:
 
         df = df.append(make_trends_call(keyword))
 
